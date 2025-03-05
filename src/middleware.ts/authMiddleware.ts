@@ -17,21 +17,21 @@ export const authenticateUser = (
   res: Response,
   next: NextFunction
 ): void => {
-  const token = req.headers.authorization?.split(" ")[1]; // Extract Bearer token
+  const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
     res.status(401).json({ error: "Unauthorized: No token provided" });
-    return; // ✅ Return after sending response
+    return;
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
       userId: string;
     };
-    req.user = { id: decoded.userId }; // ✅ Attach user ID to request
-    next(); // ✅ Call next() after successful validation
+    req.user = { id: decoded.userId };
+    next();
   } catch (error) {
     res.status(401).json({ error: "Unauthorized: Invalid token" });
-    return; // ✅ Ensure the function ends after sending a response
+    return;
   }
 };

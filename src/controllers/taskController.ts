@@ -8,7 +8,7 @@ export const createTaskHandler = async (req: Request, res: Response) => {
       return;
     }
 
-    const { title, startTime, endTime, priority } = req.body;
+    const { title, startTime, endTime, priority, status } = req.body;
 
     if (!title || !startTime || !priority) {
       res.status(400).json({ error: "Missing required fields" });
@@ -20,6 +20,7 @@ export const createTaskHandler = async (req: Request, res: Response) => {
       startTime: new Date(startTime),
       endTime: endTime ? new Date(endTime) : undefined,
       priority: Number(priority),
+      status,
     });
 
     res.status(201).json(task);
@@ -34,7 +35,7 @@ export const getTasksHandler = async (req: Request, res: Response) => {
       return;
     }
 
-    const tasks = await getTasks(req.user.id); // ✅ Fetch tasks for logged-in user
+    const tasks = await getTasks(req.user.id);
     res.json(tasks);
   } catch (error: any) {
     res.status(500).json({ error: error.message });

@@ -7,6 +7,7 @@ export const createTask = async (
     startTime: Date;
     endTime?: Date;
     priority: number;
+    status?: string;
   }
 ) => {
   if (taskData.priority < 1 || taskData.priority > 5) {
@@ -14,7 +15,11 @@ export const createTask = async (
   }
 
   const task = await prisma.task.create({
-    data: { ...taskData, status: "pending", userId }, // ✅ Associate task with user
+    data: {
+      ...taskData,
+      status: taskData.status || "pending",
+      userId,
+    },
   });
 
   return task;
@@ -22,8 +27,8 @@ export const createTask = async (
 
 export const getTasks = async (userId: string) => {
   return await prisma.task.findMany({
-    where: { userId }, // ✅ Fetch only the logged-in user's tasks
-    orderBy: { startTime: "asc" }, // Sort tasks by start time
+    where: { userId },
+    orderBy: { startTime: "asc" },
   });
 };
 
@@ -36,6 +41,14 @@ export const updateTask = async (taskId: string, updates: any) => {
 
   if (updates.priority && (updates.priority < 1 || updates.priority > 5)) {
     throw new Error("Priority must be between 1 and 5");
+  }
+
+  if (updates.startTime) {
+    updates.startTime = new Date(updates.startTime);
+  }
+
+  if (updates.endTime) {
+    updates.endTime = new Date(updates.endTime);
   }
 
   if (updates.status === "finished" && existingTask.status !== "finished") {
