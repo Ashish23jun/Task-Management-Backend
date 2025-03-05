@@ -6,18 +6,9 @@ import { IUser } from "../types/userTypes";
 
 dotenv.config();
 
-const signupUser = async ({
-  name,
-  email,
-  password,
-  confirmPassword,
-}: IUser) => {
-  if (!name || !email || !password || !confirmPassword) {
+const signupUser = async ({ name, email, password }: IUser) => {
+  if (!name || !email || !password) {
     throw new Error("All fields are required");
-  }
-
-  if (password !== confirmPassword) {
-    throw new Error("Passwords do not match");
   }
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -43,19 +34,16 @@ const loginUser = async ({ email, password }: IUser) => {
     throw new Error("Email and password are required");
   }
 
-  // Find user in the database
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     throw new Error("Invalid email");
   }
 
-  // Compare password
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     throw new Error("Invalid password");
   }
 
-  // Generate JWT token
   const token = jwt.sign(
     { userId: user.id },
     process.env.JWT_SECRET as string,
