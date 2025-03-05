@@ -8,9 +8,18 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  name     String
-  email    String @unique
-  password String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  password  String
   createdAt DateTime @default(now())
+}
+
+model Task {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  startTime DateTime
+  endTime   DateTime?
+  priority  Int       @default(3)
+  status    String    @default("pending")
 }
