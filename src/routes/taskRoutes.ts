@@ -4,9 +4,10 @@ import {
   getTasksHandler,
   updateTaskHandler,
 } from "../controllers/taskController";
+import { authenticateUser } from "../middleware.ts/authMiddleware";
 
 const router = express.Router();
-router.post("/", createTaskHandler);
-router.get("/", getTasksHandler);
+router.post("/", authenticateUser, createTaskHandler);
+router.get("/", authenticateUser, getTasksHandler);
 router.patch("/:taskId", updateTaskHandler);
 export default router;

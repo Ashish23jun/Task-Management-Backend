@@ -1,24 +1,30 @@
 import prisma from "../config/db";
 
-export const createTask = async (taskData: {
-  title: string;
-  startTime: Date;
-  endTime?: Date;
-  priority: number;
-}) => {
+export const createTask = async (
+  userId: string,
+  taskData: {
+    title: string;
+    startTime: Date;
+    endTime?: Date;
+    priority: number;
+  }
+) => {
   if (taskData.priority < 1 || taskData.priority > 5) {
     throw new Error("Priority must be between 1 and 5");
   }
 
   const task = await prisma.task.create({
-    data: { ...taskData, status: "pending" },
+    data: { ...taskData, status: "pending", userId }, // ✅ Associate task with user
   });
 
   return task;
 };
 
-export const getTasks = async () => {
-  return await prisma.task.findMany();
+export const getTasks = async (userId: string) => {
+  return await prisma.task.findMany({
+    where: { userId }, // ✅ Fetch only the logged-in user's tasks
+    orderBy: { startTime: "asc" }, // Sort tasks by start time
+  });
 };
 
 export const updateTask = async (taskId: string, updates: any) => {
