@@ -74,3 +74,43 @@ export const deleteTask = async (taskId: string) => {
 
   return { message: "Task deleted successfully" };
 };
+
+export const getTasksWithFilters = async (
+  userId: string,
+  page: number,
+  limit: number,
+  sortBy?: string,
+  order?: string,
+  priority?: number,
+  status?: string
+) => {
+  const skip = (page - 1) * limit;
+
+  const whereClause: any = { userId };
+
+  if (priority) {
+    whereClause.priority = priority;
+  }
+
+  if (status) {
+    whereClause.status = status;
+  }
+
+  const totalTasks = await prisma.task.count({ where: whereClause });
+
+  const tasks = await prisma.task.findMany({
+    where: whereClause,
+    skip,
+    take: limit,
+    orderBy: sortBy
+      ? { [sortBy]: order === "desc" ? "desc" : "asc" }
+      : { startTime: "asc" },
+  });
+
+  return {
+    tasks,
+    currentPage: page,
+    totalPages: Math.ceil(totalTasks / limit),
+    totalTasks,
+  };
+};
