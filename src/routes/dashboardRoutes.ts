@@ -3,10 +3,11 @@ import {
   getTaskCountsHandler,
   getTaskTimeMetricsHandler,
 } from "../controllers/dashboardController";
+import { authenticateUser } from "../middleware.ts/authMiddleware";
 
 const router = express.Router();
 
-router.get("/status-count", getTaskCountsHandler);
-router.get("/time-metrics", getTaskTimeMetricsHandler);
+router.get("/task-counts", authenticateUser, getTaskCountsHandler);
+router.get("/task-metrics", authenticateUser, getTaskTimeMetricsHandler);
 
 export default router;

@@ -1,59 +1,55 @@
 import prisma from "../config/db";
 
-export const getTaskCounts = async () => {
-  const totalTasks = await prisma.task.count();
-  const finishedTasks = await prisma.task.count({
-    where: { status: "Finished" },
+export const getTaskCounts = async (userId: string) => {
+  const totalTasks = await prisma.task.count({
+    where: { userId },
   });
+
+  const finishedTasks = await prisma.task.count({
+    where: { userId, status: "Finished" },
+  });
+
   const pendingTasks = await prisma.task.count({
-    where: { status: "Pending" },
+    where: { userId, status: "Pending" },
   });
 
   return { totalTasks, finishedTasks, pendingTasks };
 };
 
-export const getTaskTimeMetrics = async () => {
-  const tasks = await prisma.task.findMany();
+export const getTaskTimeMetrics = async (userId: string) => {
+  const tasks = await prisma.task.findMany({
+    where: { userId },
+  });
 
   const now = new Date();
   let totalTimeTaken = 0;
   let totalTimeLapsed = 0;
   let totalRemainingTime = 0;
 
-  tasks.forEach(
-    (task: {
-      status: string;
-      id: string;
-      title: string;
-      startTime: Date;
-      endTime: Date | null;
-      priority: number;
-      userId: string;
-    }) => {
-      const startTime = new Date(task.startTime);
-      const endTime = task.endTime ? new Date(task.endTime) : null;
+  tasks.forEach((task) => {
+    const startTime = new Date(task.startTime);
+    const endTime = task.endTime ? new Date(task.endTime) : null;
 
-      if (task.status === "Finished" && endTime) {
-        totalTimeTaken +=
-          (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+    if (task.status === "Finished" && endTime) {
+      totalTimeTaken +=
+        (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+    }
+
+    if (task.status === "Pending") {
+      if (now > startTime) {
+        totalTimeLapsed +=
+          (now.getTime() - startTime.getTime()) / (1000 * 60 * 60);
       }
 
-      if (task.status === "Pending") {
-        if (now > startTime) {
-          totalTimeLapsed +=
-            (now.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-        }
-
-        if (task.endTime) {
-          const estimatedEndTime = new Date(task.endTime);
-          if (now < estimatedEndTime) {
-            totalRemainingTime +=
-              (estimatedEndTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-          }
+      if (task.endTime) {
+        const estimatedEndTime = new Date(task.endTime);
+        if (now < estimatedEndTime) {
+          totalRemainingTime +=
+            (estimatedEndTime.getTime() - now.getTime()) / (1000 * 60 * 60);
         }
       }
     }
-  );
+  });
 
   return {
     totalTimeTaken: Math.max(totalTimeTaken, 0),

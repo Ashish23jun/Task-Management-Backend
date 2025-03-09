@@ -1,15 +1,15 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import authRoutes from "./routes/authRoutes.js";
-import taskRoutes from "./routes/taskRoutes.js";
-import dashboardRoutes from "./routes/dashboardRoutes.js";
+import authRoutes from "./routes/authRoutes";
+import taskRoutes from "./routes/taskRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 
 dotenv.config();
 const app = express();
 const allowedOrigins = [
-  "http://localhost:5173", 
-  "https://task-sigma-rust.vercel.app",  
+  "http://localhost:5173",
+  "https://task-sigma-rust.vercel.app",
 ];
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
