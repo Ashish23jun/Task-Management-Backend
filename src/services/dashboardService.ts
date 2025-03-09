@@ -11,6 +11,7 @@ export const getTaskCounts = async () => {
 
   return { totalTasks, finishedTasks, pendingTasks };
 };
+
 export const getTaskTimeMetrics = async () => {
   const tasks = await prisma.task.findMany();
 
@@ -19,33 +20,40 @@ export const getTaskTimeMetrics = async () => {
   let totalTimeLapsed = 0;
   let totalRemainingTime = 0;
 
-  tasks.forEach((task) => {
-    const startTime = new Date(task.startTime);
-    const endTime = task.endTime ? new Date(task.endTime) : null;
+  tasks.forEach(
+    (task: {
+      status: string;
+      id: string;
+      title: string;
+      startTime: Date;
+      endTime: Date | null;
+      priority: number;
+      userId: string;
+    }) => {
+      const startTime = new Date(task.startTime);
+      const endTime = task.endTime ? new Date(task.endTime) : null;
 
-    if (task.status === "Finished" && endTime) {
-      // Total time taken = endTime - startTime
-      totalTimeTaken +=
-        (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60); // Convert to hours
-    }
-
-    if (task.status === "Pending") {
-      if (now > startTime) {
-        // Time lapsed = currentTime - startTime
-        totalTimeLapsed +=
-          (now.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+      if (task.status === "Finished" && endTime) {
+        totalTimeTaken +=
+          (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
       }
 
-      if (task.endTime) {
-        const estimatedEndTime = new Date(task.endTime);
-        if (now < estimatedEndTime) {
-          // Remaining estimated time = endTime - currentTime
-          totalRemainingTime +=
-            (estimatedEndTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      if (task.status === "Pending") {
+        if (now > startTime) {
+          totalTimeLapsed +=
+            (now.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+        }
+
+        if (task.endTime) {
+          const estimatedEndTime = new Date(task.endTime);
+          if (now < estimatedEndTime) {
+            totalRemainingTime +=
+              (estimatedEndTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+          }
         }
       }
     }
-  });
+  );
 
   return {
     totalTimeTaken: Math.max(totalTimeTaken, 0),
